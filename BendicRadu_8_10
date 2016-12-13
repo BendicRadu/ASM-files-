@@ -1,0 +1,230 @@
+;Bendic Radu, gr. 911, 10.12.2016, homework fro lab 8, Problem 10
+assume cs:code,ds:data 
+data segment 
+	msg1 db 'Enter file name:$' 
+	File db 15 
+	lFile db ? 
+	fileName db 15 dup (?) 
+	buffer1 db 255 dup (?), '$' 
+	openSucces db 'File opened. $' 
+	openErrorMsg db 'File does not exist.$'
+	attributes db 4 dup(?),'$'
+data ends 
+code segment 
+	start: 
+		mov AX,data 
+		mov DS,AX 
+		
+		mov AH,09h 
+		mov DX, offset msg1 
+		int 21h 
+		
+		mov AH, 0ah 
+		mov DX, offset File 
+		int 21h 
+
+		mov AL, lFile 
+		xor AH, AH 
+		mov SI, AX 
+		mov fileName[SI], 0 
+		
+		mov AH, 43h 
+		mov AL, 0 
+		mov DX, offset fileName 
+		int 21h 
+		
+		jnc openOk 
+		
+		
+		openError: 
+			xor DX,DX 
+			mov ah, 09h 
+			mov dx, offset openErrorMsg 
+			int 21h 
+			jmp endPrg 
+		
+		openOk:
+
+		xor BX,BX 
+		mov BX,CX 
+
+		
+		mov AH, 09h 
+		mov DX, BX
+		int 21h 
+		
+		openFileSucces: 
+			cmp CX,00h
+			je Normal
+
+			Normal:
+				mov AL,'N'
+				mov attributes[0],AL
+				jmp jump1
+				
+			cmp CX,01h
+			je Read
+			
+			Read:
+				mov AL,'R'
+				mov attributes[0],AL
+				jmp jump1
+
+			cmp CX,02h
+			je Hidden
+	
+
+			Hidden:
+				mov AL,'H'
+				mov attributes[0],AL
+				jmp jump1
+			
+			
+			jump1:
+				jmp jump2
+		
+	
+			cmp CX,04h
+			je System
+			
+			System:
+				mov AL,'S'
+				mov attributes[0],AL
+				jmp jump2
+				
+			cmp CX,20h
+			je Archive
+			
+			Archive:
+				mov AL,'A'
+				mov attributes[0],AL
+				jmp jump1
+		
+			
+			cmp CX,03h
+			je RH
+			
+			RH:
+				mov AL,'R'
+				mov attributes[0],AL
+				mov AL,'H'
+				mov attributes[1],AL		
+				jmp jump2
+			
+			
+			cmp CX,05h
+			je RS
+			
+				
+			RS:
+				mov AL,'R'
+				mov attributes[0],AL
+				mov AL,'S'
+				mov attributes[1],AL	
+				jmp jump2
+			
+			cmp CX,21h
+			je AR
+					
+			AR:
+				mov AL,'R'
+				mov attributes[0],AL
+				mov AL,'A'
+				mov attributes[1],AL	
+				jmp jump2
+
+				
+				
+			jump2:
+				jmp jump3 
+			
+				
+			cmp CX,06h
+			je HS
+			
+			HS:
+				mov AL,'R'
+				mov attributes[0],AL
+				mov AL,'H'
+				mov attributes[1],AL	
+				jmp jump3 	
+
+			cmp CX,22h
+			je HA
+			
+			
+					
+			HA:
+				mov AL,'H'
+				mov attributes[0],AL
+				mov AL,'A'
+				mov attributes[1],AL	
+				jmp jump3 		
+				
+			cmp CX,24h
+			je SA
+			
+			SA:
+				mov AL,'S'
+				mov attributes[0],AL
+				mov AL,'A'
+				mov attributes[1],AL	
+				jmp jump3 	
+
+
+			cmp CX,07h
+			je RHS
+				
+					
+			RHS:
+				mov AL,'R'
+				mov attributes[0],AL
+				mov AL,'H'
+				mov attributes[1],AL
+				mov AL,'S'
+				mov attributes[2],AL	
+				jmp jump3 
+			
+			
+				
+			jump3:
+				jmp displayATR
+			
+		
+			cmp CX,23h
+			je ARH
+			
+			ARH:
+				mov AL,'A'
+				mov attributes[0],AL
+				mov AL,'R'
+				mov attributes[1],AL
+				mov AL,'H'
+				mov attributes[2],AL	
+				jmp displayATR		
+
+			cmp CX,26h
+			je ARHS
+			
+				
+			ARHS:
+				mov AL,'A'
+				mov attributes[0],AL
+				mov AL,'R'
+				mov attributes[1],AL
+				mov AL,'H'
+				mov attributes[2],AL
+				mov AL,'S'
+				mov attributes[3],AL
+				jmp displayATR
+		
+	displayATR:
+		mov AH,09h 
+		mov DX, offset attributes
+		int 21h 
+
+	endPrg: 
+		mov AX,4c00h 
+		int 21h 
+	code ends 
+end start
